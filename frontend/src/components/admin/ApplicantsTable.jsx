@@ -26,7 +26,7 @@ const ApplicantsTable = () => {
   const role = location.state?.role;
   const description = location.state?.description;
 
-  console.log("Description:",description)
+  // console.log("Description:",description)
 
   // console.log("Role: ", role);
 

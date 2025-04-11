@@ -1,0 +1,10 @@
+flask
+PyPDF2
+pdf2image
+pytesseract
+spacy
+transformers
+fuzzywuzzy
+python-Levenshtein
+requests
+pillow

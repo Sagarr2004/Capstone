@@ -111,6 +111,26 @@ app.post("/submit-profile", async (req, res) => {
 });
 
 
+app.get("/get-expert-profiles", async (req, res) => {
+  try {
+    const experts = await Expert.find({}, "fullName skills"); // only send what’s needed
+    console.log("Expert Data:",experts)
+    const formattedExperts = experts.map(expert => ({
+      name: expert.fullName,
+      skills: expert.skills,
+    }));
+
+    
+
+    res.status(200).json(formattedExperts);
+  } catch (err) {
+    console.error("Error fetching expert profiles:", err);
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+});
+
+
+
 app.get("/api/alumni/search", async (req, res) => {
   try {
     const { currentCompany, previousCompanies } = req.query;
