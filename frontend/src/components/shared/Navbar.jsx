@@ -56,7 +56,7 @@ const Navbar = () => {
         <div>
           <Link to="/"> 
             <h1 className="text-2xl font-bold">
-              Hire<span className="text-[#F83002]">Nest</span>
+              Dream<span className="text-[#F83002]">Job</span>
             </h1>
           </Link>
         </div>
@@ -66,6 +66,7 @@ const Navbar = () => {
               <>
                 <li><Link to="/admin/companies">Companies</Link></li>
                 <li><Link to="/admin/jobs">Jobs</Link></li>
+                <li><Link to="/addExpert">Add Expert</Link></li>
               </>
             ) : (
               <>

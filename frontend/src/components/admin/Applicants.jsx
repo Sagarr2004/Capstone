@@ -225,6 +225,9 @@ const Applicants = () => {
                 const res = await axios.get(`${APPLICATION_API_END_POINT}/${params.id}/applicants/resume`, { withCredentials: true });
                 if (res.data.success && Array.isArray(res.data.resumes)) {
                     const formData = new FormData();
+
+                    //fetch all the job description here
+
                     formData.append("job_description", "We are seeking a highly skilled Full-Stack Developer...");
                     
                     const resumeUrls = [];

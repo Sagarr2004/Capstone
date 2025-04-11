@@ -46,7 +46,7 @@ const CompaniesTable = () => {
         { withCredentials: true }
       );
       if (response.status === 200) {
-        toast.success(response.success.message);
+        toast.success(response.data.message);
         setFilterCompany((prev) =>
           prev.filter((company) => company._id !== companyId)
         );

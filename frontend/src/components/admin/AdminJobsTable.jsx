@@ -89,7 +89,10 @@ const AdminJobsTable = () => {
                       <div
                         onClick={() =>
                           navigate(`/admin/jobs/${job._id}/applicants`, {
-                            state: { role: job.title },
+                            state: {
+                              role: job.title,
+                              description: job.description, 
+                            },
                           })
                         }
                         className="flex items-center p-2 gap-2 cursor-pointer hover:bg-gray-100"
