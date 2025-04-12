@@ -216,23 +216,32 @@ import re
 from flask_cors import CORS
 import json
 import platform
+import sys
+import logging
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 CORS(app)
 
-# Platform-aware poppler path setup
+# Platform-aware poppler + pytesseract setup
 POPPLER_PATH = None
 if platform.system() == "Windows":
-    POPPLER_PATH = r"C:\poppler\Library\bin"  # Change this to your actual poppler path
-    os.environ["PATH"] += os.pathsep + POPPLER_PATH  # Add to PATH just in case
+    POPPLER_PATH = r"C:\poppler\poppler-24.08.0\Library\bin"  # Change this to your actual poppler path
+    os.environ["PATH"] += os.pathsep + POPPLER_PATH
 
-# Load SpaCy and BERT models
+    # Set path to tesseract executable (Windows)
+    pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"  # Change this if needed
+
+# Load NLP models
 spacy_model = spacy.load("en_core_web_sm")
 ner_pipeline = pipeline("ner", model="dslim/bert-base-NER", grouped_entities=True)
 
 interviewers = []
 
-# Extract text using OCR
+# OCR extraction from PDFs
 def extract_text_with_ocr(pdf_path):
     try:
         if POPPLER_PATH:
@@ -240,7 +249,7 @@ def extract_text_with_ocr(pdf_path):
         else:
             images = convert_from_path(pdf_path)
     except Exception as e:
-        print("OCR conversion failed:", e)
+        logger.error(f"OCR conversion failed: {e}")
         return ""
 
     text = ""
@@ -248,38 +257,36 @@ def extract_text_with_ocr(pdf_path):
         text += pytesseract.image_to_string(img)
     return text
 
-# Extract text from PDFs using PyPDF2
+# Plain text extraction using PyPDF2
 def extract_text_from_pdf(pdf_path):
     with open(pdf_path, "rb") as file:
         reader = PyPDF2.PdfReader(file)
         return "".join([page.extract_text() or "" for page in reader.pages])
 
-# Extract skills using regex, SpaCy, and BERT
+# Extract skills using multiple techniques
 def extract_skills_safely(text):
     skills = set()
 
-    # Regex-based tech skills
     tech_skills = re.findall(
         r"\b(Python|Java|C\+\+|JavaScript|React|Node|Flask|Django|SQL|MongoDB|AWS|Azure|Kubernetes|Docker)\b",
         text, re.IGNORECASE
     )
     skills.update([skill.lower() for skill in tech_skills])
-
-    # SpaCy NER
+#
     doc = spacy_model(text)
     for ent in doc.ents:
         if ent.label_ in ["ORG", "PRODUCT", "SKILL"]:
             skills.add(ent.text.lower())
 
-    # BERT NER
     bert_ents = ner_pipeline(text)
     for ent in bert_ents:
         if ent["entity_group"] in ["ORG", "MISC", "PER"]:
             skills.add(ent["word"].lower())
 
+    print(list(skills))  #run ka
     return list(skills)
 
-# Fuzzy match between two skill lists
+# Fuzzy matching between skills
 def fuzzy_match(list1, list2):
     matches = []
     for item1 in list1:
@@ -289,7 +296,7 @@ def fuzzy_match(list1, list2):
                 matches.append((item1, item2, score))
     return len(matches) / max(len(list1), 1) * 100
 
-# Scoring logic for matching experts
+# Expert scoring logic
 def calculate_expert_scores(jd_skills, resume_skills):
     expert_scores = []
     for expert_name, expert_skills in interviewers:
@@ -297,13 +304,20 @@ def calculate_expert_scores(jd_skills, resume_skills):
         matching_score = fuzzy_match(expert_skills, resume_skills)
         relevancy_score = round((0.4 * profile_score) + (0.6 * matching_score), 2)
 
+        logger.info(f"{expert_name} | Profile: {profile_score}% | Match: {matching_score}%")
+
         expert_scores.append({
             "name": expert_name,
             "score": relevancy_score
         })
     return sorted(expert_scores, key=lambda x: x["score"], reverse=True)
 
-# Optional route for testing upload
+# Test route to check API status
+@app.route("/ping")
+def ping():
+    return jsonify({"status": "ok"}), 200
+
+# Resume upload test route
 @app.route("/upload", methods=["POST"])
 def upload_resume():
     file = request.files.get("resume")
@@ -311,21 +325,39 @@ def upload_resume():
         return jsonify({"error": "No file provided"}), 400
     return jsonify({"message": "Upload successful"}), 200
 
-# Main matching endpoint (React → Flask)
+# Main skill matching route
 @app.route("/match", methods=["POST"])
 def match():
     try:
+        logger.info("===> Inside /match route")
+
+        if "resume" not in request.files:
+            logger.error("Resume file not found in request")
+            return jsonify({"error": "No resume file provided"}), 400
+
+        if "jd" not in request.form:
+            logger.error("JD not found in request")
+            return jsonify({"error": "No JD provided"}), 400
+
         file = request.files["resume"]
         jd_text = request.form["jd"]
         experts_from_express = request.form.get("experts", "[]")
+
+        logger.info("✔️ Received file and JD")
+        logger.info(f"JD Text Preview: {jd_text[:100]}")
 
         with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
             file.save(tmp_file.name)
             tmp_path = tmp_file.name
 
         resume_text = extract_text_with_ocr(tmp_path)
+        logger.info("✔️ Extracted text from resume")
+
         resume_skills = extract_skills_safely(resume_text)
+        logger.info(f"🧠 Extracted Resume Skills: {resume_skills}")
+
         jd_skills = extract_skills_safely(jd_text)
+        logger.info(f"🧠 Extracted JD Skills: {jd_skills}")
 
         global interviewers
         experts = json.loads(experts_from_express)
@@ -335,10 +367,10 @@ def match():
         return jsonify(scores)
 
     except Exception as e:
-        print("Error in /match:", e)
+        logger.error(f"❌ Error in /match: {e}")
         return jsonify({"error": str(e)}), 500
 
-# Match from resume URL
+# Resume URL-based matching route
 @app.route("/match-from-url", methods=["POST"])
 def match_from_url():
     try:
@@ -350,17 +382,16 @@ def match_from_url():
         if not resume_url or not jd_text:
             return jsonify({"error": "Missing resume URL or JD"}), 400
 
-        # Download resume
         response = requests.get(resume_url)
         if response.status_code != 200:
-            print("Failed to download resume:", response.status_code)
+            logger.error(f"Failed to download resume: {response.status_code}")
             return jsonify({"error": "Resume download failed"}), 400
 
         with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
             tmp_file.write(response.content)
             tmp_path = tmp_file.name
 
-        resume_text = extract_text_with_ocr(tmp_path)
+        resume_text = extract_text_with_ocr(tmp_path)  
         resume_skills = extract_skills_safely(resume_text)
         jd_skills = extract_skills_safely(jd_text)
 
@@ -371,9 +402,9 @@ def match_from_url():
         return jsonify(scores)
 
     except Exception as e:
-        print("Error in /match-from-url:", str(e))
+        logger.error(f"Error in /match-from-url: {e}")
         return jsonify({"error": str(e)}), 500
 
-# Run the app
 if __name__ == "__main__":
     app.run(debug=True)
+
