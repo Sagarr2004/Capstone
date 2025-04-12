@@ -74,7 +74,7 @@ const Alerts = () => {
 
       {/* Notifications */}
       <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-        📢 Student Notifications
+        📢 Job Notifications
       </h2>
       {notifications.length === 0 ? (
         <p className="text-gray-100 text-center">No new notifications</p>

@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const ExpertList = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { resume, name, email, description } = location.state || {};
 
   const [experts, setExperts] = useState([]);
@@ -60,38 +61,51 @@ const ExpertList = () => {
   }, [resume, description]);
 
   return (
-    <div className="max-w-4xl mx-auto mt-12 px-4">
+    <div className="bg-gradient-to-br from-indigo-600 via-purple-500 to-pink-500 min-h-screen py-12">
+      {/* Back Button */}
+      <button
+        onClick={() => navigate(-1)} // Navigates back to the previous page
+        className="text-white font-semibold text-lg px-4 py-2 mb-6 ml-4 bg-indigo-500 hover:bg-indigo-600 rounded-lg transition-colors"
+      >
+        Back
+      </button>
+
       {/* Candidate Details */}
-      <div className="bg-white shadow-md rounded-lg p-6 mb-8">
-        <h2 className="text-xl font-semibold mb-4 text-gray-800">Candidate Info</h2>
-        <p><span className="font-medium">Name:</span> {name || "N/A"}</p>
-        <p><span className="font-medium">Email:</span> {email || "N/A"}</p>
-        <p><span className="font-medium">Description:</span> {description || "N/A"}</p>
-        <p>
-          <span className="font-medium">Resume:</span>{" "}
-          {resume ? (
-            <a href={resume} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
-              View Resume
-            </a>
-          ) : (
-            "Not Available"
-          )}
-        </p>
+      <div className="max-w-4xl mx-auto bg-white shadow-lg rounded-xl p-8 mb-8">
+        <h2 className="text-3xl font-semibold text-gray-900 mb-6 text-center">Candidate Information</h2>
+        <div className="space-y-4">
+          <p className="text-lg text-gray-700"><span className="font-semibold">Name:</span> {name || "N/A"}</p>
+          <p className="text-lg text-gray-700"><span className="font-semibold">Email:</span> {email || "N/A"}</p>
+          <p className="text-lg text-gray-700"><span className="font-semibold">Description:</span> {description || "N/A"}</p>
+          <p className="text-lg text-gray-700">
+            <span className="font-semibold">Resume:</span>{" "}
+            {resume ? (
+              <a href={resume} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                View Resume
+              </a>
+            ) : (
+              "Not Available"
+            )}
+          </p>
+        </div>
       </div>
 
       {/* Scores */}
-      <h2 className="text-2xl font-bold mb-6 text-center">Relevancy Scores</h2>
-      <div className="bg-white shadow-lg rounded-lg p-6 space-y-4">
+      <h2 className="text-3xl font-bold text-center text-gray-900 mb-6">Relevancy Scores</h2>
+      <div className="max-w-4xl mx-auto bg-white shadow-lg rounded-xl p-8 space-y-6">
         {loading ? (
-          <p>Loading expert matches...</p>
+          <p className="text-xl text-gray-600 text-center">Loading expert matches...</p>
         ) : errorMsg ? (
-          <p className="text-red-600 font-medium">{errorMsg}</p>
+          <p className="text-red-600 text-center font-medium text-lg">{errorMsg}</p>
         ) : experts.length > 0 ? (
           experts.map((expert, index) => (
-            <div key={index} className="flex justify-between items-center border-b pb-2 last:border-b-0">
-              <span className="text-lg font-medium text-gray-800">{expert.name}</span>
+            <div
+              key={index}
+              className="flex justify-between items-center p-4 border-b border-gray-200 last:border-b-0 hover:bg-gray-50 rounded-lg transition-all"
+            >
+              <span className="text-xl font-medium text-gray-800">{expert.name}</span>
               <span
-                className={`text-sm font-semibold px-3 py-1 rounded-full ${
+                className={`text-sm font-semibold px-4 py-2 rounded-full ${
                   expert.score >= 85
                     ? "bg-green-100 text-green-700"
                     : expert.score >= 70
@@ -104,7 +118,7 @@ const ExpertList = () => {
             </div>
           ))
         ) : (
-          <p>No expert matches found.</p>
+          <p className="text-xl text-gray-600 text-center">No expert matches found.</p>
         )}
       </div>
     </div>

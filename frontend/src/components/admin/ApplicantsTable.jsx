@@ -26,19 +26,13 @@ const ApplicantsTable = () => {
   const role = location.state?.role;
   const description = location.state?.description;
 
-  // console.log("Description:",description)
-
-  // console.log("Role: ", role);
-
   const statusHandler = async (status, id, email) => {
-    // console.log("called");
     try {
       axios.defaults.withCredentials = true;
       const res = await axios.post(
         `${APPLICATION_API_END_POINT}/status/${id}/update`,
         { status, email, role }
       );
-      console.log(res);
       if (res.data.success) {
         toast.success(res.data.message);
       }
@@ -48,31 +42,45 @@ const ApplicantsTable = () => {
   };
 
   return (
-    <div>
-      <Table>
-        <TableCaption>A list of your recent applied user</TableCaption>
-        <TableHeader>
-          <TableRow>
-            <TableHead>FullName</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Contact</TableHead>
-            <TableHead>Resume</TableHead>
-            <TableHead>Date</TableHead>
-            <TableHead className="text-right">Action</TableHead>
-            <TableHead>Form Panel</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {applicants &&
-            applicants?.applications?.map((item) => (
-              <tr key={item._id}>
-                <TableCell>{item?.applicant?.fullname}</TableCell>
-                <TableCell>{item?.applicant?.email}</TableCell>
-                <TableCell>{item?.applicant?.phoneNumber}</TableCell>
-                <TableCell>
+    <div className="min-h-screen bg-gradient-to-br from-blue-100 to-purple-200 p-10 font-sans">
+      <div className="bg-white shadow-2xl rounded-3xl p-8 max-w-full overflow-x-auto">
+        <h2 className="text-4xl font-extrabold text-gray-800 mb-6 text-center uppercase tracking-wide">
+          Applicants List
+        </h2>
+        <Table>
+          <TableCaption className="text-sm text-gray-500 italic">
+            A list of recently applied users.
+          </TableCaption>
+          <TableHeader>
+            <TableRow className="bg-gradient-to-r from-blue-200 to-purple-300 text-gray-800 font-bold text-base tracking-wide uppercase">
+              <TableHead>Full Name</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Contact</TableHead>
+              <TableHead>Resume</TableHead>
+              <TableHead>Date</TableHead>
+              <TableHead className="text-right">Action</TableHead>
+              <TableHead>Form Panel</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {applicants?.applications?.map((item) => (
+              <TableRow
+                key={item._id}
+                className="hover:bg-blue-50 transition-all duration-200 text-gray-700"
+              >
+                <TableCell className="font-medium text-sm">
+                  {item?.applicant?.fullname}
+                </TableCell>
+                <TableCell className="text-sm">
+                  {item?.applicant?.email}
+                </TableCell>
+                <TableCell className="text-sm">
+                  {item?.applicant?.phoneNumber}
+                </TableCell>
+                <TableCell className="text-sm">
                   {item.applicant?.profile?.resume ? (
                     <a
-                      className="text-blue-600 cursor-pointer"
+                      className="text-blue-600 hover:underline font-medium"
                       href={item?.applicant?.profile?.resume}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -80,43 +88,42 @@ const ApplicantsTable = () => {
                       {item?.applicant?.profile?.resumeOriginalName}
                     </a>
                   ) : (
-                    <span>NA</span>
+                    <span className="text-gray-400 italic">Not uploaded</span>
                   )}
                 </TableCell>
-                {/* <TableCell>{item?.applicant.createdAt.split("T")[0]}</TableCell> */}
-                <TableCell>
+                <TableCell className="text-sm">
                   {item?.applicant?.createdAt
                     ? item.applicant.createdAt.split("T")[0]
                     : "NA"}
                 </TableCell>
-
-                <TableCell className="float-right cursor-pointer">
+                <TableCell className="text-right">
                   <Popover>
                     <PopoverTrigger>
-                      <MoreHorizontal />
+                      <MoreHorizontal className="cursor-pointer text-gray-700 hover:text-black" />
                     </PopoverTrigger>
-                    <PopoverContent className="w-32">
-                      {shortlistingStatus.map((status, index) => {
-                        return (
-                          <div
-                            onClick={() =>
-                              statusHandler(
-                                status,
-                                item?._id,
-                                item?.applicant?.email
-                              )
-                            }
-                            key={index}
-                            className="flex w-fit items-center my-2 cursor-pointer"
-                          >
-                            <span>{status}</span>
-                          </div>
-                        );
-                      })}
+                    <PopoverContent className="w-32 bg-white shadow-md rounded-md">
+                      {shortlistingStatus.map((status, index) => (
+                        <div
+                          key={index}
+                          onClick={() =>
+                            statusHandler(
+                              status,
+                              item?._id,
+                              item?.applicant?.email
+                            )
+                          }
+                          className={`flex items-center px-2 py-1 rounded cursor-pointer hover:bg-gray-100 text-sm ${
+                            status === "Accepted"
+                              ? "text-green-600"
+                              : "text-red-500"
+                          }`}
+                        >
+                          {status}
+                        </div>
+                      ))}
                     </PopoverContent>
                   </Popover>
                 </TableCell>
-
                 <TableCell>
                   <Link
                     to="/expertList"
@@ -124,27 +131,21 @@ const ApplicantsTable = () => {
                       resume: item?.applicant?.profile?.resume,
                       name: item?.applicant?.fullname,
                       email: item?.applicant?.email,
-                      description : description
+                      description: description,
                     }}
                   >
                     <button
-                      className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm"
-                      onClick={() => {
-                        // Example placeholder for form panel navigation or modal
-                        console.log(
-                          `Open form panel for ${item?.applicant?.fullname}`
-                        );
-                        // You can navigate or open a modal here
-                      }}
+                      className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-1.5 rounded-lg shadow-md text-sm font-semibold transition duration-200"
                     >
-                      Form Panel
+                      Open Panel
                     </button>
                   </Link>
                 </TableCell>
-              </tr>
+              </TableRow>
             ))}
-        </TableBody>
-      </Table>
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 };

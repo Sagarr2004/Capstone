@@ -25,10 +25,7 @@ const Navbar = () => {
         );
         setNotificationCount(res.data.notifications.length);
       } catch (error) {
-        console.error(
-          "Error fetching notifications:",
-          error.response?.data?.message || error.message
-        );
+        console.error("Error fetching notifications:", error.response?.data?.message || error.message);
       }
     };
     fetchNotifications();
@@ -51,76 +48,84 @@ const Navbar = () => {
   };
 
   return (
-    <div className="bg-white shadow-md  w-full z-50">
+    <div className="bg-white shadow-lg w-full z-50">
       <div className="flex items-center justify-between mx-auto max-w-7xl h-16 px-6">
-        <div>
-          <Link to="/"> 
-            <h1 className="text-2xl font-bold">
-              Dream<span className="text-[#F83002]">Job</span>
-            </h1>
-          </Link>
-        </div>
-        <div className="flex items-center gap-12">
-          <ul className="flex font-medium items-center gap-5">
+        {/* Logo */}
+        <Link to="/">
+          <h1 className="text-3xl font-extrabold text-[#0F4C75]">
+            Hire<span className="text-[#F96D00]">Nest</span>
+          </h1>
+        </Link>
+
+        {/* Navigation */}
+        <div className="flex items-center gap-10">
+          <ul className="flex items-center gap-6 font-medium text-gray-700">
             {user && user.role === "recruiter" ? (
               <>
-                <li><Link to="/admin/companies">Companies</Link></li>
-                <li><Link to="/admin/jobs">Jobs</Link></li>
-                <li><Link to="/addExpert">Add Expert</Link></li>
+                <li><Link className="hover:text-[#F96D00]" to="/admin/companies">Companies</Link></li>
+                <li><Link className="hover:text-[#F96D00]" to="/admin/jobs">Jobs</Link></li>
+                <li><Link className="hover:text-[#F96D00]" to="/addExpert">Add Expert</Link></li>
               </>
             ) : (
               <>
                 <li className="relative">
-                  <Link to="/alerts">
+                  <Link className="hover:text-[#F96D00]" to="/alerts">
                     Alerts
                     {notificationCount > 0 && (
-                      <span className="absolute -top-2 -right-3 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                      <span className="absolute -top-2 -right-3 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full animate-pulse">
                         {notificationCount}
                       </span>
                     )}
                   </Link>
                 </li>
-                <li><Link to="/alumni/search">Alumni</Link></li>
-                <li><Link to="/jobs">Jobs</Link></li>
-                <li><Link to="/browse">Browse</Link></li>
+                <li><Link className="hover:text-[#F96D00]" to="/alumni/search">Alumni</Link></li>
+                <li><Link className="hover:text-[#F96D00]" to="/jobs">Jobs</Link></li>
+                <li><Link className="hover:text-[#F96D00]" to="/browse">Browse</Link></li>
               </>
             )}
           </ul>
+
+          {/* Auth Buttons */}
           {!user ? (
-            <div className="flex items-center gap-2">
-              <Link to="/login"><Button variant="outline">Login</Button></Link>
-              <Link to="/signup"><Button className="bg-[#219C90] hover:bg-[#1e8a7f]">Signup</Button></Link>
+            <div className="flex items-center gap-3">
+              <Link to="/login">
+                <Button variant="outline" className="hover:border-[#219C90] hover:text-[#219C90]">Login</Button>
+              </Link>
+              <Link to="/signup">
+                <Button className="bg-[#219C90] hover:bg-[#1f857e] text-white">Signup</Button>
+              </Link>
             </div>
           ) : (
             <Popover>
               <PopoverTrigger asChild>
-                <Avatar className="cursor-pointer">
-                  <AvatarImage src={user?.profile?.profilePhoto} alt="User Profile" />
+                <Avatar className="cursor-pointer hover:scale-105 transition-transform">
+                  <AvatarImage src={user?.profile?.profilePhoto} alt="User" />
                 </Avatar>
               </PopoverTrigger>
-              <PopoverContent className="w-80">
-                <div>
-                  <div className="flex gap-2 space-y-2">
-                    <Avatar className="cursor-pointer">
-                      <AvatarImage src={user?.profile?.profilePhoto} alt="User Profile" />
-                    </Avatar>
-                    <div>
-                      <h4 className="font-medium">{user?.fullname}</h4>
-                      <p className="text-sm text-gray-500">{user?.profile?.bio}</p>
-                    </div>
+              <PopoverContent className="w-80 p-4 shadow-xl rounded-xl">
+                <div className="flex items-center gap-3">
+                  <Avatar>
+                    <AvatarImage src={user?.profile?.profilePhoto} />
+                  </Avatar>
+                  <div>
+                    <h4 className="font-semibold text-lg text-[#0F4C75]">{user?.fullname}</h4>
+                    <p className="text-sm text-gray-500">{user?.profile?.bio}</p>
                   </div>
-                  <div className="flex flex-col my-2 text-gray-600">
-                    {user && user.role === "student" && (
-                      <div className="flex w-fit items-center gap-2 cursor-pointer">
-                        <User2 />
-                        <Button variant="link"><Link to="/profile">View Profile</Link></Button>
-                      </div>
-                    )}
-                    <div className="flex w-fit items-center gap-2 cursor-pointer">
-                      <LogOut />
-                      <Button onClick={logoutHandler} variant="link">Logout</Button>
-                    </div>
-                  </div>
+                </div>
+                <div className="mt-4 flex flex-col gap-3 text-gray-600">
+                  {user.role === "student" && (
+                    <Link to="/profile" className="flex items-center gap-2 hover:text-[#F96D00]">
+                      <User2 className="w-4 h-4" />
+                      View Profile
+                    </Link>
+                  )}
+                  <button
+                    onClick={logoutHandler}
+                    className="flex items-center gap-2 text-left hover:text-[#F96D00]"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Logout
+                  </button>
                 </div>
               </PopoverContent>
             </Popover>

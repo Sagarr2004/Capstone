@@ -9,6 +9,7 @@ CORS(app)  # Enable CORS for frontend requests
 
 # Configure Gemini API Key (Use Environment Variable)
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "AIzaSyDhaiXx828ZD9Z_m6BrE0b_c76egmkJOPg")
+
 genai.configure(api_key="AIzaSyDhaiXx828ZD9Z_m6BrE0b_c76egmkJOPg")
 
 def analyze_resume(text):

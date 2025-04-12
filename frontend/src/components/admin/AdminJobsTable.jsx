@@ -37,7 +37,7 @@ const AdminJobsTable = () => {
     try {
       const res = await axios.delete(
         `${JOB_API_END_POINT}/delete/${jobId}`,
-        { withCredentials: true } // Automatically sends cookies
+        { withCredentials: true }
       );
 
       if (res.data.success) {
@@ -50,38 +50,45 @@ const AdminJobsTable = () => {
   };
 
   return (
-    <div className="bg-gradient-to-r from-blue-500 to-purple-600 min-h-screen p-10">
-      <div className="max-w-6xl mx-auto bg-white/30 backdrop-blur-md rounded-lg shadow-xl p-6">
-        <h1 className="text-2xl font-bold text-white mb-4">Job Listings</h1>
+    <div className="bg-gradient-to-br from-indigo-600 via-cyan-500 to-blue-600 min-h-screen p-10">
+      <div className="max-w-6xl mx-auto bg-white/30 backdrop-blur-md rounded-2xl shadow-2xl p-6 border border-white/40">
+        <h1 className="text-3xl font-extrabold text-white mb-6 tracking-wide">
+          Job Listings
+        </h1>
         <Table className="text-white">
-          <TableCaption className="text-gray-200">
-            A list of your recent posted jobs
+          <TableCaption className="text-gray-200 mb-4">
+            A list of your recently posted jobs
           </TableCaption>
           <TableHeader>
-            <TableRow className="bg-white/20">
+            <TableRow className="bg-white/20 text-white uppercase text-sm tracking-wider">
               <TableHead>Company Name</TableHead>
               <TableHead>Role</TableHead>
               <TableHead>Date</TableHead>
-              <TableHead className="text-right">Action</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filterJobs?.map((job) => (
-              <TableRow key={job._id} className="hover:bg-white/10 transition">
+            {filterJobs?.map((job, index) => (
+              <TableRow
+                key={job._id}
+                className={`${
+                  index % 2 === 0 ? "bg-white/10" : "bg-white/5"
+                } hover:bg-white/20 transition-all duration-300`}
+              >
                 <TableCell>{job?.company?.name}</TableCell>
                 <TableCell>{job?.title}</TableCell>
                 <TableCell>{job?.createdAt.split("T")[0]}</TableCell>
                 <TableCell className="text-right">
                   <Popover>
                     <PopoverTrigger>
-                      <Button variant="ghost" className="text-white">
+                      <Button variant="ghost" className="text-white hover:text-yellow-200">
                         <MoreHorizontal />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-40 bg-white text-black rounded-lg shadow-md">
+                    <PopoverContent className="w-44 bg-white text-black rounded-lg shadow-md">
                       <div
                         onClick={() => navigate(`/admin/companies/${job._id}`)}
-                        className="flex items-center gap-2 p-2 cursor-pointer hover:bg-gray-100"
+                        className="flex items-center gap-2 p-2 cursor-pointer hover:bg-gray-100 rounded-md"
                       >
                         <Edit2 className="w-4" />
                         <span>Edit</span>
@@ -91,18 +98,18 @@ const AdminJobsTable = () => {
                           navigate(`/admin/jobs/${job._id}/applicants`, {
                             state: {
                               role: job.title,
-                              description: job.description, 
+                              description: job.description,
                             },
                           })
                         }
-                        className="flex items-center p-2 gap-2 cursor-pointer hover:bg-gray-100"
+                        className="flex items-center p-2 gap-2 cursor-pointer hover:bg-gray-100 rounded-md"
                       >
                         <Eye className="w-4" />
                         <span>Applicants</span>
                       </div>
                       <div
                         onClick={() => deleteJob(job._id)}
-                        className="flex items-center p-2 gap-2 cursor-pointer text-red-500 hover:bg-red-100"
+                        className="flex items-center p-2 gap-2 cursor-pointer text-red-600 hover:bg-red-100 rounded-md"
                       >
                         <Trash2 className="w-4" />
                         <span>Remove</span>
